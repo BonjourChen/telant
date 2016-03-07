@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import sys 
-reload(sys) 
+import sys
+reload(sys)
 sys.setdefaultencoding("utf-8")
 
 import scrapy
@@ -96,7 +96,7 @@ class TelantSpider(scrapy.Spider):
 #  <request type="json"><![CDATA[{"action":"load-data","dataProvider":"businessMgr#doLoadData","supportsEntity":true,"parameter":{"isCollection":"true","entityId":"441000000000001006301400","className":"DEVICE","type":"inside"},"resultDataType":"v:com.ccssoft.inventory.web.equipment.view.BusinessMgr$[v:com.ccssoft.inventory.web.equipment.view.BusinessMgr$dtInside]","pageSize":50,"pageNo":1,"context":{},"loadedDataTypes":["dtRent","dtWithOutProLink","dtInsert","dtInside"]}]]></request>
 #  </batch>'''
         request = scrapy.Request(
-            url, method='POST', 
+            url, method='POST',
             body=body,
             headers={'Content-Type':'text/xml'},
             callback=self.parse_test2,
@@ -105,11 +105,33 @@ class TelantSpider(scrapy.Spider):
         yield request
 
     def parse_test2(self, response):
-        #  with open('test.html', 'w') as f:
-            #  f.write(response.body)
         #  scrapy.shell.inspect_response(response, self)
         tmp = response.body
         data = re.search(r'^{$.*^}$', tmp, re.S | re.M).group(0)
-        with open('test.json', 'w') as f:
+        with open('test1.json', 'w') as f:
             f.write(data)
+        pageCount = int( re.search(r'"pageCount":(\d+)', tmp).group(1) )
+        if pageCount > 1:
+            for idx in range( pageCount ):
+                url = 'http://132.121.96.108:8001/telant/dorado/view-service'
+                body = '''<batch>
+        <request type="json"><![CDATA[{"action":"load-data","dataProvider":"deviceMgr#doLoadData","supportsEntity":true,"parameter":{"__viewConfigName":"com.ccssoft.inventory.web.equipment.view.DeviceMgr","CUS_FILTER":null,"metaClassName":"ROUTER","CUS_OWNER_NET_ID":"23","isCollection":"true","isTemplate":null,"paramValue":"23","cus_specId":"1024600001","CUS_SPEC":"路由器"},"resultDataType":"v:com.ccssoft.inventory.web.equipment.view.DeviceMgr$[v:com.ccssoft.inventory.web.equipment.view.DeviceMgr$dataTypeEntity]","pageSize":100,"pageNo":''' + str(idx+2) + ''',"context":{},"loadedDataTypes":["dataTypeCondition","dataTypeSpec","dataTypeEntity","dataTypeOwnerNet","dataSetSS__SS","dataTypeNumber","dataTypeSharding","dataSetIMS__AGCF","datatypeSwitchLog","dataSetVPNNUMBER__VPNNUMBER"]}]]></request>
+        </batch>'''
+                request = scrapy.Request(
+                    url, method='POST',
+                    body=body,
+                    headers={'Content-Type':'text/xml'},
+                    callback=self.parse_next,
+                    meta = {'idx' : str(idx + 1)},
+                    dont_filter=True
+                )
+                yield request
 
+    def parse_next(self, response):
+        #  scrapy.shell.inspect_response(response, self)
+        if response.status == 200:
+            idx = response.meta['idx']
+            tmp = response.body
+            data = re.search(r'^{$.*^}$', tmp, re.S | re.M).group(0)
+            with open('test' + idx + '.json', 'w') as f:
+                f.write(data)
