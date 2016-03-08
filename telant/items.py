@@ -7,12 +7,6 @@
 
 import scrapy
 
-
-class TelantItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
-
 class DeviceItem(scrapy.Item):
     tl_meid = scrapy.Field()
     tl_name = scrapy.Field()
@@ -56,7 +50,14 @@ class CardItem(scrapy.Item):
     tl_device_name = scrapy.Field()
     tl_wg_code = scrapy.Field()
     tl_region = scrapy.Field()
-    tl_life_satus = scrapy.Field()
+    tl_life_status = scrapy.Field()
     tl_physical_status = scrapy.Field()
     tl_project_status = scrapy.Field()
     tl_work_way = scrapy.Field()
+
+class CardErrorItem(scrapy.Item):
+    tl_device_meid = scrapy.Field()
+    tl_typespec_id = scrapy.Field()
+    tl_device_telnet_ip = scrapy.Field()
+    tl_device_name = scrapy.Field()
+    response_body = scrapy.Field()

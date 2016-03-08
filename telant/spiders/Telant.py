@@ -7,7 +7,7 @@ import scrapy
 import json
 import logging
 import re
-from telant.items import DeviceItem, CardItem
+from telant.items import *
 
 #  logging.log(logging.DEBUG, "This is a warning")
 
@@ -165,39 +165,47 @@ class TelantSpider(scrapy.Spider):
     def parse_card(self, response):
         #  scrapy.shell.inspect_response(response, self)
         tmp = response.body
+        deviceItem = response.meta['Item']
         try:
             data = re.search(r'^{$.*^}$', tmp, re.S | re.M).group(0)
-            jsonData = json.loads(data)['data']['data'][0]
-            deviceItem = response.meta['Item']
-            Item = CardItem()
+            #  jsonData = json.loads(data)['data']['data'][0]
+            jsonData = json.loads(data)['data']['data']
+            for tmpData in jsonData:
+                Item = CardItem()
+                Item['tl_device_meid'] = deviceItem['tl_meid']
+                Item['tl_typespec_id'] = deviceItem['tl_typespec_id']
+                Item['tl_device_telnet_ip'] = deviceItem['tl_telnet_ip']
+                Item['tl_is_mothreboard'] = tmpData.setdefault("isMotherBoard", '')
+                Item['tl_physical_code'] = tmpData.setdefault("CUS_SLOT_NAME", '')
+                Item['tl_logic_code'] = tmpData.setdefault("CUS_SLOT_CODE", '')
+                Item['tl_shelf_code'] = tmpData.setdefault("CUS_SHELF_CODE", '')
+                Item['tl_total_portcount'] = tmpData.setdefault("PORTCOUNT_TOTAL", '')
+                Item['tl_occupy_portcount'] = tmpData.setdefault("PORTCOUNT_OCCUPY", '')
+                Item['tl_free_portcount'] = tmpData.setdefault("PORTCOUNT_FREE", '')
+                Item['tl_using_status'] = tmpData.setdefault("USING_STATE_ID", '')
+                Item['tl_alias'] = tmpData.setdefault("ALIAS", '')
+                Item['tl_speciality'] = tmpData.setdefault("BELONG_SPECIALITY_ID", '')
+                Item['tl_device_model'] = tmpData.setdefault("NAME", '')
+                Item['tl_model'] = tmpData.setdefault("TYPE_CARD_CONTAIN_CARD@MODEL", '')
+                Item['tl_standard_name'] = tmpData.setdefault("STANDARD_NAME", '')
+                Item['tl_standard_code'] = tmpData.setdefault("STANDARD_CODE", '')
+                Item['tl_category'] = tmpData.setdefault("CUS_CARD_CATEGORY", '')
+                Item['tl_room'] = tmpData.setdefault("FACILITY_HOLD_WARE@NAME", '')
+                Item['tl_vendor'] = tmpData.setdefault("VENDOR_CONTAIN_CARD@NAMECN", '')
+                Item['tl_device_name'] = tmpData.setdefault("DEVICE_CONTAIN_WARE@NAME", '')
+                Item['tl_wg_code'] = tmpData.setdefault("NM_CODE", '')
+                Item['tl_region'] = tmpData.setdefault("SHARDING_ID", '')
+                Item['tl_life_status'] = tmpData.setdefault("LIFE_STATE_ID", '')
+                Item['tl_physical_status'] = tmpData.setdefault("PHYSICAL_STATE_ID", '')
+                Item['tl_project_status'] = tmpData.setdefault("PROJECT_STATUS_ID", '')
+                Item['tl_work_way'] = tmpData.setdefault("WORK_WAY_ID", '')
+                yield Item
+        except:
+            #  scrapy.shell.inspect_response(response, self)
+            Item = CardErrorItem()
             Item['tl_device_meid'] = deviceItem['tl_meid']
             Item['tl_typespec_id'] = deviceItem['tl_typespec_id']
             Item['tl_device_telnet_ip'] = deviceItem['tl_telnet_ip']
-            Item['tl_is_mothreboard'] = jsonData.setdefault("isMotherBoard", '')
-            Item['tl_physical_code'] = jsonData.setdefault("CUS_SLOT_NAME", '')
-            Item['tl_logic_code'] = jsonData.setdefault("CUS_SLOT_CODE", '')
-            Item['tl_shelf_code'] = jsonData.setdefault("CUS_SHELF_CODE", '')
-            Item['tl_total_portcount'] = jsonData.setdefault("PORTCOUNT_TOTAL", '')
-            Item['tl_occupy_portcount'] = jsonData.setdefault("PORTCOUNT_OCCUPY", '')
-            Item['tl_free_portcount'] = jsonData.setdefault("PORTCOUNT_FREE", '')
-            Item['tl_using_status'] = jsonData.setdefault("USING_STATE_ID", '')
-            Item['tl_alias'] = jsonData.setdefault("ALIAS", '')
-            Item['tl_speciality'] = jsonData.setdefault("BELONG_SPECIALITY_ID", '')
-            Item['tl_device_model'] = jsonData.setdefault("NAME", '')
-            Item['tl_model'] = jsonData.setdefault("TYPE_CARD_CONTAIN_CARD@MODEL", '')
-            Item['tl_standard_name'] = jsonData.setdefault("STANDARD_NAME", '')
-            Item['tl_standard_code'] = jsonData.setdefault("STANDARD_CODE", '')
-            Item['tl_category'] = jsonData.setdefault("CUS_CARD_CATEGORY", '')
-            Item['tl_room'] = jsonData.setdefault("FACILITY_HOLD_WARE@NAME", '')
-            Item['tl_vendor'] = jsonData.setdefault("VENDOR_CONTAIN_CARD@NAMECN", '')
-            Item['tl_device_name'] = jsonData.setdefault("DEVICE_CONTAIN_WARE@NAME", '')
-            Item['tl_wg_code'] = jsonData.setdefault("NM_CODE", '')
-            Item['tl_region'] = jsonData.setdefault("SHARDING_ID", '')
-            Item['tl_life_satus'] = jsonData.setdefault("LIFE_STATE_ID", '')
-            Item['tl_physical_status'] = jsonData.setdefault("PHYSICAL_STATE_ID", '')
-            Item['tl_project_status'] = jsonData.setdefault("PROJECT_STATUS_ID", '')
-            Item['tl_work_way'] = jsonData.setdefault("WORK_WAY_ID", '')
+            Item['tl_device_name'] = deviceItem['tl_name']
+            Item['response_body'] = response.body
             yield Item
-        except:
-            #  scrapy.shell.inspect_response(response, self)
-            pass
