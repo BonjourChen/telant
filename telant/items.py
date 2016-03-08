@@ -61,3 +61,27 @@ class CardErrorItem(scrapy.Item):
     tl_device_telnet_ip = scrapy.Field()
     tl_device_name = scrapy.Field()
     response_body = scrapy.Field()
+
+class LinkItem(scrapy.Item):
+    tl_device_meid = scrapy.Field()
+    tl_device_telnet_ip = scrapy.Field()
+    tl_device_name = scrapy.Field()
+    tl_service_name = scrapy.Field()
+    tl_last_order_code = scrapy.Field()
+    tl_access_code = scrapy.Field()
+    tl_using_status = scrapy.Field()
+    tl_a_room = scrapy.Field()
+    tl_a_device_name = scrapy.Field()
+    tl_a_device_meid = scrapy.Field()
+    tl_a_port_name = scrapy.Field()
+    tl_z_room = scrapy.Field()
+    tl_z_device_name = scrapy.Field()
+    tl_z_device_meid = scrapy.Field()
+    tl_z_port_name = scrapy.Field()
+    tl_optical_code = scrapy.Field()
+
+class LinkErrorItem(scrapy.Item):
+    tl_device_meid = scrapy.Field()
+    tl_device_telnet_ip = scrapy.Field()
+    tl_device_name = scrapy.Field()
+    response_body = scrapy.Field()

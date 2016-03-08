@@ -147,20 +147,36 @@ class TelantSpider(scrapy.Spider):
                 yield Item
 
                 url = 'http://132.121.96.108:8001/telant/dorado/view-service'
-                body = '''
+                body_card = '''
 <batch>
 <request type="json"><![CDATA[{"action":"load-data","dataProvider":"cardMgr#queryCardParamService","supportsEntity":true,"parameter":{"parentMetaClassName":"''' + str( Item['tl_typespec_id'] ) + '''","__viewConfigName":"com.ccssoft.inventory.web.equipment.view.CardParameterAndServiceMgr","metaClassName":"CARD","isCollection":"true","parentEntityId":"''' + str( Item['tl_meid'] ) + '''","paramValue":null,"deviceMetaClassName":null,"deviceEntityId":null},"resultDataType":"v:com.ccssoft.inventory.web.equipment.view.CardParameterAndServiceMgr$[v:com.ccssoft.inventory.web.equipment.view.CardParameterAndServiceMgr$dataTypeEntity]","pageSize":100,"pageNo":1,"context":{},"loadedDataTypes":["dataTypeEntity","dataTypeLifeState","dataTypeSanYuanZu","dataTypeSvlan","dataTypeCondition","dataTypeCardRate","dataTypeCardType"]}]]></request>
 </batch>
                 '''
-                request = scrapy.Request(
+                request_card = scrapy.Request(
                     url, method='POST',
-                    body=body,
+                    body=body_card,
                     headers={'Content-Type':'text/xml'},
                     callback=self.parse_card,
                     dont_filter=True
                 )
-                request.meta['Item'] = Item
-                yield request
+                request_card.meta['Item'] = Item
+                yield request_card
+
+                body_link = '''
+<batch>
+<request type="json"><![CDATA[{"action":"load-data","dataProvider":"businessMgr#doLoadData","supportsEntity":true,"parameter":{"isCollection":"true","entityId":"''' + str(Item['tl_meid']) + '''","className":"DEVICE","type":"inside"},"resultDataType":"v:com.ccssoft.inventory.web.equipment.view.BusinessMgr$[v:com.ccssoft.inventory.web.equipment.view.BusinessMgr$dtInside]","pageSize":50,"pageNo":1,"context":{},"loadedDataTypes":["dtWithOutProLink","dtInside","dtInsert","dtRent"]}]]></request>
+</batch>
+                
+                '''
+                request_link = scrapy.Request(
+                    url, method='POST',
+                    body=body_link,
+                    headers={'Content-Type':'text/xml'},
+                    callback=self.parse_link,
+                    dont_filter=True
+                )
+                request_link.meta['Item'] = Item
+                yield request_link
 
     def parse_card(self, response):
         #  scrapy.shell.inspect_response(response, self)
@@ -168,7 +184,6 @@ class TelantSpider(scrapy.Spider):
         deviceItem = response.meta['Item']
         try:
             data = re.search(r'^{$.*^}$', tmp, re.S | re.M).group(0)
-            #  jsonData = json.loads(data)['data']['data'][0]
             jsonData = json.loads(data)['data']['data']
             for tmpData in jsonData:
                 Item = CardItem()
@@ -200,11 +215,67 @@ class TelantSpider(scrapy.Spider):
                 Item['tl_project_status'] = tmpData.setdefault("PROJECT_STATUS_ID", '')
                 Item['tl_work_way'] = tmpData.setdefault("WORK_WAY_ID", '')
                 yield Item
-        except:
+        except Exception as e:
             #  scrapy.shell.inspect_response(response, self)
             Item = CardErrorItem()
             Item['tl_device_meid'] = deviceItem['tl_meid']
             Item['tl_typespec_id'] = deviceItem['tl_typespec_id']
+            Item['tl_device_telnet_ip'] = deviceItem['tl_telnet_ip']
+            Item['tl_device_name'] = deviceItem['tl_name']
+            Item['response_body'] = response.body
+            yield Item
+
+    def parse_link(self, response):
+        #  scrapy.shell.inspect_response(response, self)
+        tmp = response.body
+        deviceItem = response.meta['Item']
+        try:
+            data = re.search(r'^{$.*^}$', tmp, re.S | re.M).group(0)
+            jsonData = json.loads(data)['data']['data']
+            for tmpData in jsonData:
+                Item = LinkItem()
+                Item['tl_device_meid'] = deviceItem['tl_meid']
+                Item['tl_device_telnet_ip'] = deviceItem['tl_telnet_ip']
+                Item['tl_device_name'] = deviceItem['tl_name']
+                Item['tl_service_name'] = tmpData.setdefault("NAME", '')
+                Item['tl_last_order_code'] = tmpData.setdefault("LAST_ORDER_CODE", '')
+                Item['tl_access_code'] = tmpData.setdefault("ACCESS_CODE", '')
+                Item['tl_using_status'] = tmpData.setdefault("usingState", '')
+                Item['tl_a_room'] = tmpData.setdefault("SERVICE_END_A_FACILITY@NAME", '')
+                Item['tl_a_device_name'] = tmpData.setdefault("aDeviceName", '')
+                Item['tl_a_device_meid'] = tmpData.setdefault("SERVICE_END_A_PORT@PHYSIC_DEVICE_ID", '')
+                Item['tl_a_port_name'] = tmpData.setdefault("aPortName", '')
+                Item['tl_z_room'] = tmpData.setdefault("SERVICE_END_Z_FACILITY@NAME", '')
+                Item['tl_z_device_name'] = tmpData.setdefault("zDeviceName", '')
+                Item['tl_z_device_meid'] = tmpData.setdefault("SERVICE_END_Z_PORT@PHYSIC_DEVICE_ID", '')
+                Item['tl_z_port_name'] = tmpData.setdefault("zPortName", '')
+                Item['tl_optical_code'] = tmpData.setdefault("fibersectionCode", '')
+                yield Item
+        except ValueError as e:
+            jsonData = json.loads(data.decode("unicode-escape"))['data']['data']
+            for tmpData in jsonData:
+                Item = LinkItem()
+                Item['tl_device_meid'] = deviceItem['tl_meid']
+                Item['tl_device_telnet_ip'] = deviceItem['tl_telnet_ip']
+                Item['tl_device_name'] = deviceItem['tl_name']
+                Item['tl_service_name'] = tmpData.setdefault("NAME", '')
+                Item['tl_last_order_code'] = tmpData.setdefault("LAST_ORDER_CODE", '')
+                Item['tl_access_code'] = tmpData.setdefault("ACCESS_CODE", '')
+                Item['tl_using_status'] = tmpData.setdefault("usingState", '')
+                Item['tl_a_room'] = tmpData.setdefault("SERVICE_END_A_FACILITY@NAME", '')
+                Item['tl_a_device_name'] = tmpData.setdefault("aDeviceName", '')
+                Item['tl_a_device_meid'] = tmpData.setdefault("SERVICE_END_A_PORT@PHYSIC_DEVICE_ID", '')
+                Item['tl_a_port_name'] = tmpData.setdefault("aPortName", '')
+                Item['tl_z_room'] = tmpData.setdefault("SERVICE_END_Z_FACILITY@NAME", '')
+                Item['tl_z_device_name'] = tmpData.setdefault("zDeviceName", '')
+                Item['tl_z_device_meid'] = tmpData.setdefault("SERVICE_END_Z_PORT@PHYSIC_DEVICE_ID", '')
+                Item['tl_z_port_name'] = tmpData.setdefault("zPortName", '')
+                Item['tl_optical_code'] = tmpData.setdefault("fibersectionCode", '')
+                yield Item
+        except Exception as e:
+            #  scrapy.shell.inspect_response(response, self)
+            Item = LinkErrorItem()
+            Item['tl_device_meid'] = deviceItem['tl_meid']
             Item['tl_device_telnet_ip'] = deviceItem['tl_telnet_ip']
             Item['tl_device_name'] = deviceItem['tl_name']
             Item['response_body'] = response.body

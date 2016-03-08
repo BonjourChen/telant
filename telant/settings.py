@@ -65,6 +65,8 @@ ITEM_PIPELINES = {
   'telant.pipelines.DevicePipeline': 300,
   'telant.pipelines.CardPipeline': 400,
   'telant.pipelines.CardErrorPipeline': 500,
+  'telant.pipelines.LinkPipeline': 500,
+  'telant.pipelines.LinkErrorPipeline': 600,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
