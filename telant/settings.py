@@ -63,10 +63,11 @@ NEWSPIDER_MODULE = 'telant.spiders'
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
   'telant.pipelines.DevicePipeline': 300,
-  'telant.pipelines.CardPipeline': 400,
-  'telant.pipelines.CardErrorPipeline': 500,
-  'telant.pipelines.LinkPipeline': 500,
-  'telant.pipelines.LinkErrorPipeline': 600,
+  'telant.pipelines.DeviceErrorPipeline': 400,
+  'telant.pipelines.CardPipeline': 500,
+  'telant.pipelines.CardErrorPipeline': 600,
+  'telant.pipelines.LinkPipeline': 700,
+  'telant.pipelines.LinkErrorPipeline': 800,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

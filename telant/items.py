@@ -26,11 +26,15 @@ class DeviceItem(scrapy.Item):
     tl_life_status = scrapy.Field()
     tl_typespec_id = scrapy.Field()
 
+class DeviceErrorItem(scrapy.Item):
+    device_exception = scrapy.Field()
+    response_body = scrapy.Field()
+
 class CardItem(scrapy.Item):
     tl_device_meid = scrapy.Field()
     tl_typespec_id = scrapy.Field()
     tl_device_telnet_ip = scrapy.Field()
-    tl_is_mothreboard = scrapy.Field()
+    tl_is_motherboard = scrapy.Field()
     tl_physical_code = scrapy.Field()
     tl_logic_code = scrapy.Field()
     tl_shelf_code = scrapy.Field()
@@ -60,6 +64,7 @@ class CardErrorItem(scrapy.Item):
     tl_typespec_id = scrapy.Field()
     tl_device_telnet_ip = scrapy.Field()
     tl_device_name = scrapy.Field()
+    card_exception = scrapy.Field()
     response_body = scrapy.Field()
 
 class LinkItem(scrapy.Item):
@@ -84,4 +89,5 @@ class LinkErrorItem(scrapy.Item):
     tl_device_meid = scrapy.Field()
     tl_device_telnet_ip = scrapy.Field()
     tl_device_name = scrapy.Field()
+    link_exception = scrapy.Field()
     response_body = scrapy.Field()
