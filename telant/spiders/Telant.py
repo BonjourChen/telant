@@ -82,7 +82,11 @@ class TelantSpider(scrapy.Spider):
             for tmpData in jsonData:
                 Item = DeviceItem()
                 Item['tl_meid'] = tmpData.setdefault('ID', '')
-                Item['tl_name'] = tmpData.setdefault('NM_CODE', '')
+                Item['tl_name'] = tmpData.setdefault('NAME', '')
+                Item['tl_code'] = tmpData.setdefault('CODE', '')
+                Item['tl_ems_name'] = tmpData.setdefault('NM_CODE', '')
+                Item['tl_standard_name'] = tmpData.setdefault("STANDARD_NAME", '')
+                Item['tl_standard_code'] = tmpData.setdefault("STANDARD_CODE", '')
                 Item['tl_assemblename'] = tmpData.setdefault('NAME', '')
                 Item['tl_telnet_ip'] = tmpData.setdefault('TELNET_IP', '')
                 Item['tl_model'] = tmpData.setdefault('TYPE_DEVICE_CONTAIN_ROUTER@NAME', '')
@@ -98,6 +102,8 @@ class TelantSpider(scrapy.Spider):
                 Item['tl_project_status'] = tmpData.setdefault('PROJECT_STATUS_ID', '')
                 Item['tl_life_status'] = tmpData.setdefault('LIFE_STATE_ID', '')
                 Item['tl_typespec_id'] = tmpData.setdefault('TYPE_DEVICE_CONTAIN_ROUTER@TYPESPEC_ID', '')
+                Item['tl_create_date'] = tmpData.setdefault('CREATE_DATE', '')
+                Item['tl_modify_date'] = tmpData.setdefault('MODIFY_DATE', '')
                 yield Item
 
                 body_card = '''
@@ -162,7 +168,7 @@ class TelantSpider(scrapy.Spider):
             for tmpData in jsonData:
                 Item = CardItem()
                 Item['tl_device_meid'] = deviceItem['tl_meid']
-                Item['tl_typespec_id'] = deviceItem['tl_typespec_id']
+                Item['tl_device_typespec_id'] = deviceItem['tl_typespec_id']
                 Item['tl_device_telnet_ip'] = deviceItem['tl_telnet_ip']
                 Item['tl_is_motherboard'] = tmpData.setdefault("isMotherBoard", '')
                 Item['tl_physical_code'] = tmpData.setdefault("CUS_SLOT_NAME", '')
@@ -210,9 +216,9 @@ class TelantSpider(scrapy.Spider):
             #  scrapy.shell.inspect_response(response, self)
             Item = CardErrorItem()
             Item['tl_device_meid'] = deviceItem['tl_meid']
-            Item['tl_typespec_id'] = deviceItem['tl_typespec_id']
+            Item['tl_device_typespec_id'] = deviceItem['tl_typespec_id']
             Item['tl_device_telnet_ip'] = deviceItem['tl_telnet_ip']
-            Item['tl_device_name'] = deviceItem['tl_name']
+            Item['tl_device_name'] = deviceItem['tl_ems_name']
             Item['card_exception'] = str(e)
             Item['response_body'] = response.body
             yield Item
@@ -236,17 +242,13 @@ class TelantSpider(scrapy.Spider):
                 except ValueError as e2:
                     #  logging.warning("This is a warning:" + str(e2))
                     #后面字符串的锅  "REQUIREMENT_DESC":""南溪综合机房\/RAN-A-6(ZXCTN 6130XG-S)'1\/8---跳纤---- 南溪综合机房\/LTEENODEB10 07槽 UMPT板第一端口"",
-                    try:
-                        jsonData = json.loads(re.sub(r'(?<!:)""|""(?!,)', '"', data.decode("unicode-escape")))['data']['data']
-                    except ValueError as e3:
-                        #  logging.warning("This is a warning:" + str(e3))
-                        jsonData = json.loads(re.sub(r'(?<!:)""|""(?!,)', '"', data.decode("unicode-escape")), strict = False)['data']['data']
+                    jsonData = json.loads(re.sub(r'(?<!:)""|""(?!,)', '"', data.decode("unicode-escape")), strict = False)['data']['data']
             finally:
                 for tmpData in jsonData:
                     Item = LinkItem()
                     Item['tl_device_meid'] = deviceItem['tl_meid']
                     Item['tl_device_telnet_ip'] = deviceItem['tl_telnet_ip']
-                    Item['tl_device_name'] = deviceItem['tl_name']
+                    Item['tl_device_name'] = deviceItem['tl_ems_name']
                     Item['tl_service_name'] = tmpData.setdefault("NAME", '')
                     Item['tl_last_order_code'] = tmpData.setdefault("LAST_ORDER_CODE", '')
                     Item['tl_access_code'] = tmpData.setdefault("ACCESS_CODE", '')
@@ -282,7 +284,7 @@ class TelantSpider(scrapy.Spider):
             Item = LinkErrorItem()
             Item['tl_device_meid'] = deviceItem['tl_meid']
             Item['tl_device_telnet_ip'] = deviceItem['tl_telnet_ip']
-            Item['tl_device_name'] = deviceItem['tl_name']
+            Item['tl_device_name'] = deviceItem['tl_ems_name']
             Item['link_exception'] = str(e)
             Item['response_body'] = response.body
             yield Item

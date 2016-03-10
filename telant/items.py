@@ -10,6 +10,10 @@ import scrapy
 class DeviceItem(scrapy.Item):
     tl_meid = scrapy.Field()
     tl_name = scrapy.Field()
+    tl_code = scrapy.Field()
+    tl_ems_name = scrapy.Field()
+    tl_standard_name = scrapy.Field()
+    tl_standard_code = scrapy.Field()
     tl_assemblename = scrapy.Field()
     tl_telnet_ip = scrapy.Field()
     tl_model = scrapy.Field()
@@ -25,6 +29,8 @@ class DeviceItem(scrapy.Item):
     tl_project_status = scrapy.Field()
     tl_life_status = scrapy.Field()
     tl_typespec_id = scrapy.Field()
+    tl_create_date = scrapy.Field()
+    tl_modify_date = scrapy.Field()
 
 class DeviceErrorItem(scrapy.Item):
     device_exception = scrapy.Field()
@@ -32,7 +38,7 @@ class DeviceErrorItem(scrapy.Item):
 
 class CardItem(scrapy.Item):
     tl_device_meid = scrapy.Field()
-    tl_typespec_id = scrapy.Field()
+    tl_device_typespec_id = scrapy.Field()
     tl_device_telnet_ip = scrapy.Field()
     tl_is_motherboard = scrapy.Field()
     tl_physical_code = scrapy.Field()
@@ -61,7 +67,7 @@ class CardItem(scrapy.Item):
 
 class CardErrorItem(scrapy.Item):
     tl_device_meid = scrapy.Field()
-    tl_typespec_id = scrapy.Field()
+    tl_device_typespec_id = scrapy.Field()
     tl_device_telnet_ip = scrapy.Field()
     tl_device_name = scrapy.Field()
     card_exception = scrapy.Field()
