@@ -10,7 +10,7 @@ import re
 from telant.items import *
 
 class TelantSpider(scrapy.Spider):
-    name = "Telant"
+    name = "telant_man"
     allowed_domains = ["132.121.92.224:8803/telant"]
     start_urls = (
         'http://132.121.92.224:8803/telant/',
@@ -59,8 +59,9 @@ class TelantSpider(scrapy.Spider):
         url = 'http://132.121.92.224:8803/telant/dorado/view-service'
         body = '''
 <batch>
-<request type="json"><![CDATA[{"action":"load-data","dataProvider":"deviceMgr#doLoadData","supportsEntity":true,"parameter":{"__viewConfigName":"com.ccssoft.inventory.web.equipment.view.DeviceMgr","CUS_FILTER":null,"metaClassName":"ROUTER","CUS_OWNER_NET_ID":"23","isCollection":"true","isTemplate":null,"paramValue":"23","cus_specId":"1024600001","CUS_SPEC":"路由器"},"resultDataType":"v:com.ccssoft.inventory.web.equipment.view.DeviceMgr$[v:com.ccssoft.inventory.web.equipment.view.DeviceMgr$dataTypeEntity]","pageSize":100,"pageNo":1,"context":{},"loadedDataTypes":["dataTypeCondition","dataTypeSpec","dataTypeEntity","dataTypeOwnerNet","dataSetSS__SS","dataTypeNumber","dataTypeSharding","dataSetIMS__AGCF","datatypeSwitchLog","dataSetVPNNUMBER__VPNNUMBER"]}]]></request>
-</batch>'''
+<request type="json"><![CDATA[{"action":"load-data","dataProvider":"deviceMgr#doLoadData","supportsEntity":true,"parameter":{"__viewConfigName":"com.ccssoft.inventory.web.equipment.view.DeviceMgr","CUS_FILTER":null,"metaClassName":"ROUTER","CUS_OWNER_NET_ID":"56","isCollection":"true","isTemplate":null,"paramValue":"56","cus_specId":"1024600001","CUS_SPEC":"路由器"},"resultDataType":"v:com.ccssoft.inventory.web.equipment.view.DeviceMgr$[v:com.ccssoft.inventory.web.equipment.view.DeviceMgr$dataTypeEntity]","pageSize":100,"pageNo":1,"context":{},"loadedDataTypes":["dataTypeEntity","dataTypeCondition","dataSetIMS__AGCF","datatypeSwitchLog","dataSetVPNNUMBER__VPNNUMBER","dataTypeSpec","dataTypeNumber","dataTypeOwnerNet","dataSetSS__SS"]}]]></request>
+</batch>
+'''
         request = scrapy.Request(
             url, method='POST',
             body=body,
@@ -91,14 +92,17 @@ class TelantSpider(scrapy.Spider):
                 Item['tl_telnet_ip'] = tmpData.setdefault('TELNET_IP', '')
                 Item['tl_model'] = tmpData.setdefault('TYPE_DEVICE_CONTAIN_ROUTER@NAME', '')
                 Item['tl_vendor'] = tmpData.setdefault('VENDOR_CONTAIN_ROUTER@NAMECN', '')
-                Item['tl_speciality'] = tmpData.setdefault('CUS_SPEC', '')
+                Item['tl_speciality'] = tmpData.setdefault('BELONG_SPECIALITY_ID', '')
+                Item['tl_specification'] = tmpData.setdefault('CUS_SPEC', '')
                 Item['tl_network_layer'] = tmpData.setdefault('NETWORK_LAYER_ID', '')
                 Item['tl_role'] = tmpData.setdefault('NETWORK_ROLE_ID', '')
                 Item['tl_owner_net'] = tmpData.setdefault('OWNER_NET_ID', '')
                 Item['tl_circlecode'] = tmpData.setdefault('CIRCLE_NAME', '')
                 Item['tl_cityname'] = tmpData.setdefault('DEVICE_BIND_SHARDING_1@NAME', '')
-                Item['tl_region'] = tmpData.setdefault('SMALL_COUNTRY', '')
+                Item['tl_small_country'] = tmpData.setdefault('SMALL_COUNTRY', '')
                 Item['tl_marketing_area'] = tmpData.setdefault('MARKETING_AREA', '')
+                Item['tl_tml_area'] = tmpData.setdefault('DEVICE_LOCATE_TML_AREA_PERMISSIONS@NAME', '')
+                Item['tl_reg_area'] = tmpData.setdefault('DEVICE_LOCATE_REG_AREA_PERMISSIONS@NAME', '')
                 Item['tl_room'] = tmpData.setdefault('CUS_ENTITY_ROOM', '')
                 Item['tl_project_status'] = tmpData.setdefault('PROJECT_STATUS_ID', '')
                 Item['tl_life_status'] = tmpData.setdefault('LIFE_STATE_ID', '')
@@ -139,8 +143,9 @@ class TelantSpider(scrapy.Spider):
             if pageCount > pageNo:
                 body_device = '''
 <batch>
-<request type="json"><![CDATA[{"action":"load-data","dataProvider":"deviceMgr#doLoadData","supportsEntity":true,"parameter":{"__viewConfigName":"com.ccssoft.inventory.web.equipment.view.DeviceMgr","CUS_FILTER":null,"metaClassName":"ROUTER","CUS_OWNER_NET_ID":"23","isCollection":"true","isTemplate":null,"paramValue":"23","cus_specId":"1024600001","CUS_SPEC":"路由器"},"resultDataType":"v:com.ccssoft.inventory.web.equipment.view.DeviceMgr$[v:com.ccssoft.inventory.web.equipment.view.DeviceMgr$dataTypeEntity]","pageSize":100,"pageNo":''' + str(pageNo + 1) + ''',"context":{},"loadedDataTypes":["dataTypeCondition","dataTypeSpec","dataTypeEntity","dataTypeOwnerNet","dataSetSS__SS","dataTypeNumber","dataTypeSharding","dataSetIMS__AGCF","datatypeSwitchLog","dataSetVPNNUMBER__VPNNUMBER"]}]]></request>
-</batch>'''
+<request type="json"><![CDATA[{"action":"load-data","dataProvider":"deviceMgr#doLoadData","supportsEntity":true,"parameter":{"__viewConfigName":"com.ccssoft.inventory.web.equipment.view.DeviceMgr","CUS_FILTER":null,"metaClassName":"ROUTER","CUS_OWNER_NET_ID":"56","isCollection":"true","isTemplate":null,"paramValue":"56","cus_specId":"1024600001","CUS_SPEC":"路由器"},"resultDataType":"v:com.ccssoft.inventory.web.equipment.view.DeviceMgr$[v:com.ccssoft.inventory.web.equipment.view.DeviceMgr$dataTypeEntity]","pageSize":100,"pageNo":''' + str(pageNo + 1) + ''',"context":{},"loadedDataTypes":["dataTypeEntity","dataTypeCondition","dataSetIMS__AGCF","datatypeSwitchLog","dataSetVPNNUMBER__VPNNUMBER","dataTypeSpec","dataTypeNumber","dataTypeOwnerNet","dataSetSS__SS"]}]]></request>
+</batch>
+'''
                 request_device = scrapy.Request(
                     url, method='POST',
                     body=body_device,
