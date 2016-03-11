@@ -11,9 +11,9 @@ from telant.items import *
 
 class TelantSpider(scrapy.Spider):
     name = "Telant"
-    allowed_domains = ["132.121.96.108:8001/telant"]
+    allowed_domains = ["132.121.92.224:8803/telant"]
     start_urls = (
-        'http://132.121.96.108:8001/telant/',
+        'http://132.121.92.224:8803/telant/',
     )
 
     def parse(self, response):
@@ -26,14 +26,14 @@ class TelantSpider(scrapy.Spider):
             "_eventId":"submit",
             "_secondAuthentication":"",
             "loginFromSubApp":"",
-            "username":"SA",
-            "password":"321EWQ"
+            "username":"guoyy2",
+            "password":"123qwe!Q"
         }
         headers={
             'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.82 Safari/537.36',
             'Cookie':cookie
         }
-        yield scrapy.FormRequest("http://132.121.96.108:8001/cas/login?service=http%3A%2F%2F132.121.96.108%3A8001%2Ftelant%2Fpage%2Flogin.jsp",
+        yield scrapy.FormRequest("http://132.121.92.224:8813/cas/login?service=http%3A%2F%2F132.121.92.224%3A8803%2Ftelant%2Fpage%2Flogin.jsp",
                                  method = "POST",
                                  headers= headers,
                                  formdata = formdata,
@@ -42,7 +42,7 @@ class TelantSpider(scrapy.Spider):
 
     def parse_transit(self, response):
         cookie = response.headers['Set-Cookie'].partition(';')[0]
-        url = 'http://132.121.96.108:8001/telant/security_check'
+        url = 'http://132.121.92.224:8803/telant/security_check'
 
         yield scrapy.Request(
             url = url,
@@ -56,7 +56,7 @@ class TelantSpider(scrapy.Spider):
         )
 
     def logged_in(self, response):
-        url = 'http://132.121.96.108:8001/telant/dorado/view-service'
+        url = 'http://132.121.92.224:8803/telant/dorado/view-service'
         body = '''
 <batch>
 <request type="json"><![CDATA[{"action":"load-data","dataProvider":"deviceMgr#doLoadData","supportsEntity":true,"parameter":{"__viewConfigName":"com.ccssoft.inventory.web.equipment.view.DeviceMgr","CUS_FILTER":null,"metaClassName":"ROUTER","CUS_OWNER_NET_ID":"23","isCollection":"true","isTemplate":null,"paramValue":"23","cus_specId":"1024600001","CUS_SPEC":"路由器"},"resultDataType":"v:com.ccssoft.inventory.web.equipment.view.DeviceMgr$[v:com.ccssoft.inventory.web.equipment.view.DeviceMgr$dataTypeEntity]","pageSize":100,"pageNo":1,"context":{},"loadedDataTypes":["dataTypeCondition","dataTypeSpec","dataTypeEntity","dataTypeOwnerNet","dataSetSS__SS","dataTypeNumber","dataTypeSharding","dataSetIMS__AGCF","datatypeSwitchLog","dataSetVPNNUMBER__VPNNUMBER"]}]]></request>
@@ -78,7 +78,7 @@ class TelantSpider(scrapy.Spider):
             data = re.search(r'^{$.*^}$', tmp, re.S | re.M).group(0)
             jsonData = json.loads(data)['data']['data']
 
-            url = 'http://132.121.96.108:8001/telant/dorado/view-service'
+            url = 'http://132.121.92.224:8803/telant/dorado/view-service'
             for tmpData in jsonData:
                 Item = DeviceItem()
                 Item['tl_meid'] = tmpData.setdefault('ID', '')
@@ -91,9 +91,10 @@ class TelantSpider(scrapy.Spider):
                 Item['tl_telnet_ip'] = tmpData.setdefault('TELNET_IP', '')
                 Item['tl_model'] = tmpData.setdefault('TYPE_DEVICE_CONTAIN_ROUTER@NAME', '')
                 Item['tl_vendor'] = tmpData.setdefault('VENDOR_CONTAIN_ROUTER@NAMECN', '')
-                Item['tl_role'] = tmpData.setdefault('CUS_SPEC', '')
+                Item['tl_speciality'] = tmpData.setdefault('CUS_SPEC', '')
                 Item['tl_network_layer'] = tmpData.setdefault('NETWORK_LAYER_ID', '')
-                Item['tl_speciality'] = tmpData.setdefault('OWNER_NET_ID', '')
+                Item['tl_role'] = tmpData.setdefault('NETWORK_ROLE_ID', '')
+                Item['tl_owner_net'] = tmpData.setdefault('OWNER_NET_ID', '')
                 Item['tl_circlecode'] = tmpData.setdefault('CIRCLE_NAME', '')
                 Item['tl_cityname'] = tmpData.setdefault('DEVICE_BIND_SHARDING_1@NAME', '')
                 Item['tl_region'] = tmpData.setdefault('SMALL_COUNTRY', '')
@@ -196,7 +197,7 @@ class TelantSpider(scrapy.Spider):
                 Item['tl_work_way'] = tmpData.setdefault("WORK_WAY_ID", '')
                 yield Item
             if pageCount > pageNo:
-                url = 'http://132.121.96.108:8001/telant/dorado/view-service'
+                url = 'http://132.121.92.224:8803/telant/dorado/view-service'
                 body_card = '''
 <batch>
 <request type="json"><![CDATA[{"action":"load-data","dataProvider":"cardMgr#queryCardParamService","supportsEntity":true,"parameter":{"parentMetaClassName":"''' + str( deviceItem['tl_typespec_id'] ) + '''","__viewConfigName":"com.ccssoft.inventory.web.equipment.view.CardParameterAndServiceMgr","metaClassName":"CARD","isCollection":"true","parentEntityId":"''' + str( deviceItem['tl_meid'] ) + '''","paramValue":null,"deviceMetaClassName":null,"deviceEntityId":null},"resultDataType":"v:com.ccssoft.inventory.web.equipment.view.CardParameterAndServiceMgr$[v:com.ccssoft.inventory.web.equipment.view.CardParameterAndServiceMgr$dataTypeEntity]","pageSize":100,"pageNo":''' + str(pageNo + 1) + '''',"context":{},"loadedDataTypes":["dataTypeEntity","dataTypeLifeState","dataTypeSanYuanZu","dataTypeSvlan","dataTypeCondition","dataTypeCardRate","dataTypeCardType"]}]]></request>
@@ -264,7 +265,7 @@ class TelantSpider(scrapy.Spider):
                     Item['tl_optical_code'] = tmpData.setdefault("fibersectionCode", '')
                     yield Item
                 if pageCount > pageNo:
-                    url = 'http://132.121.96.108:8001/telant/dorado/view-service'
+                    url = 'http://132.121.92.224:8803/telant/dorado/view-service'
                     body_link = '''
 <batch>
 <request type="json"><![CDATA[{"action":"load-data","dataProvider":"businessMgr#doLoadData","supportsEntity":true,"parameter":{"isCollection":"true","entityId":"''' + str(deviceItem['tl_meid']) + '''","className":"DEVICE","type":"inside"},"resultDataType":"v:com.ccssoft.inventory.web.equipment.view.BusinessMgr$[v:com.ccssoft.inventory.web.equipment.view.BusinessMgr$dtInside]","pageSize":50,"pageNo":''' + str(pageNo + 1) + ''',"context":{},"loadedDataTypes":["dtWithOutProLink","dtInside","dtInsert","dtRent"]}]]></request>
